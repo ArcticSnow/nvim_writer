@@ -103,7 +103,7 @@ function M.open()
   state.src_buf = cur_buf
   state.src_win = vim.api.nvim_get_current_win()
 
-  vim.cmd 'botright vsplit'
+  vim.cmd 'topleft vsplit'
   vim.cmd('vertical resize ' .. WIDTH)
   state.win = vim.api.nvim_get_current_win()
   state.buf = vim.api.nvim_create_buf(false, true)

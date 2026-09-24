@@ -18,24 +18,26 @@
 -- down any other module.
 -- ============================================================================
 
-vim.api.nvim_create_autocmd('PackChanged', {
-  callback = function(ev)
-    local name, kind = ev.data.spec.name, ev.data.kind
-    if kind ~= 'install' and kind ~= 'update' then
-      return
-    end
-    if name == 'telescope-fzf-native.nvim' then
-      vim.system({ 'make' }, { cwd = ev.data.path })
-    end
-  end,
-})
+-- No PackChanged build hooks needed currently -- telescope-fzf-native.nvim
+-- (the one plugin here that needed one, via `make`) was removed since it
+-- needs a C compiler that isn't available. Add one back here the same way
+-- if a future plugin needs a post-install/update step:
+--   vim.api.nvim_create_autocmd('PackChanged', {
+--     callback = function(ev)
+--       if ev.data.spec.name == 'some-plugin' and (ev.data.kind == 'install' or ev.data.kind == 'update') then
+--         vim.system({ 'some-build-command' }, { cwd = ev.data.path })
+--       end
+--     end,
+--   })
 
 local plugin_modules = {
   'colors',
   'treesitter',
   'typst',
+  'typst_preview',
   'telescope',
   'mini',
+  'markdown_render',
   'oil',
   'auto-session',
   'misc',

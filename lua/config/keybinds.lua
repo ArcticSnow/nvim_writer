@@ -86,19 +86,14 @@ map('n', '<c-k>', '<c-w>k', { desc = 'Move to top window' })
 map('n', '<c-l>', '<c-w>l', { desc = 'Move to right window' })
 
 -- ---------------------------------------------------------------------------
--- Typst compile/preview -- lua/custom/typst_preview.lua
+-- Typst compile/preview -- lua/plugins/typst_preview.lua (browser preview,
+-- via typst-preview.nvim -- see that file for why this is a real plugin
+-- dependency rather than a lua/custom/ module, unlike the rest of this
+-- config). Same mnemonic (<leader>tp) as the Kitty version it replaced;
+-- ]p/[p are gone since this is a continuously scrollable view, not
+-- page-by-page.
 -- ---------------------------------------------------------------------------
-map('n', '<leader>tp', function()
-  require('custom.typst_preview').toggle()
-end, { desc = 'Toggle Typst live preview (Kitty)' })
-
-map('n', ']p', function()
-  require('custom.typst_preview').next_page()
-end, { desc = 'Typst preview: next page' })
-
-map('n', '[p', function()
-  require('custom.typst_preview').prev_page()
-end, { desc = 'Typst preview: previous page' })
+map('n', '<leader>tp', '<cmd>TypstPreviewToggle<CR>', { desc = 'Toggle Typst live preview (browser)' })
 
 map('n', '<leader>tv', function()
   local pdf = (vim.api.nvim_buf_get_name(0):gsub('%.typ$', '')) .. '.pdf'
