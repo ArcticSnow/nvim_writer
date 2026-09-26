@@ -85,26 +85,13 @@ return {
     -- Highlighting + indent, installing on demand for anything not in the
     -- list above.
     vim.api.nvim_create_autocmd('FileType', {
-      callback = function(args)
-        local lang = vim.treesitter.language.get_lang(args.match) or args.match
-        if not lang or lang == '' then
-          return
-        end
-
-        local function enable()
-          pcall(vim.treesitter.start, args.buf)
-          vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-        end
-
-        if vim.treesitter.language.add(lang) then
-          enable()
-        else
-          local ok, job = pcall(require('nvim-treesitter').install, { lang })
-          if ok and job and job.await then
-            job:await(enable)
-          end
-        end
-      end,
-    })
+    callback = function(args)
+      local lang = vim.treesitter.language.get_lang(args.match) or args.match
+      if lang and lang ~= '' and vim.treesitter.language.add(lang) then
+        pcall(vim.treesitter.start, args.buf)
+        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end
+    end,
+  })
   end,
 }
