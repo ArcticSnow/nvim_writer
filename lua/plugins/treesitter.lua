@@ -31,6 +31,14 @@
 -- current recommended manual-registration approach at that point -- I've
 -- gotten the hand-rolled version of this wrong twice now and don't want to
 -- ship a third guess.
+--
+-- FOUND VIA :checkhealth: "error during tree-sitter build" (which sounded
+-- typst-specific) was actually `tree-sitter-cli not found` -- a missing
+-- prerequisite for building ANY parser this way, not just typst's. Markdown
+-- only ever looked fine because Neovim 0.12 ships a markdown parser
+-- built-in, independent of this file entirely -- yaml and bibtex were
+-- silently failing to install too. Checked for up front now, with one clear
+-- message instead of a separate confusing failure per language.
 -- ============================================================================
 
 local ensure_installed = { 'markdown', 'markdown_inline', 'yaml', 'bibtex', 'typst' }
@@ -41,6 +49,19 @@ return {
   },
 
   config = function()
+    if vim.fn.executable 'tree-sitter' == 0 then
+      vim.schedule(function()
+        vim.notify(
+          'treesitter: `tree-sitter-cli` not found -- no parsers (markdown/yaml/bibtex/typst) can be '
+            .. 'built from source, so none of this file\'s syntax highlighting will install. '
+            .. 'You have cargo, so: `cargo install tree-sitter-cli`, then restart Neovim.',
+          vim.log.levels.WARN,
+          { title = 'treesitter' }
+        )
+      end)
+      return
+    end
+
     local already_installed = require('nvim-treesitter.config').get_installed()
     local to_install = vim
       .iter(ensure_installed)

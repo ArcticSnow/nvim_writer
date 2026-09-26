@@ -60,6 +60,12 @@ set.incsearch = true
 set.hlsearch = true
 set.inccommand = 'split'
 set.undofile = true -- persistent undo across sessions -- you'll want this for articles
+
+-- FOUND VIA :checkhealth: auto-session's healthcheck warns without this --
+-- 'localoptions' in sessionoptions is what makes filetype/highlighting
+-- (and treesitter, indentexpr, etc.) actually come back correctly when a
+-- session is restored, not just which files/windows were open.
+set.sessionoptions = 'blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions'
 set.swapfile = false
 set.backup = false
 set.clipboard = 'unnamedplus'

@@ -66,6 +66,13 @@ map('n', '<leader>fb', function()
   require('telescope.builtin').buffers()
 end, { desc = 'Find buffers' })
 
+-- Same as the main coding config's <space>fn -- vim.fn.stdpath('config')
+-- resolves per NVIM_APPNAME, so this correctly browses nvim_writer's own
+-- config files here rather than the coding config's.
+map('n', '<space>fn', function()
+  require('telescope.builtin').find_files { cwd = vim.fn.stdpath 'config' }
+end, { desc = 'Telescope nvim_writer config files' })
+
 -- ---------------------------------------------------------------------------
 -- Files (oil.nvim -- takes over the buffer instead of a permanent sidebar,
 -- which is the point: no tree pane sitting in view while you write)
