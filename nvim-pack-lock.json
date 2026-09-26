@@ -41,7 +41,7 @@
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-treesitter": {
-      "rev": "f603a2f4da48728f80257fb5fbb90145fd1dc173",
+      "rev": "25a9b06a09ea4e10712bec37e7b7d9f423262b91",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
@@ -72,9 +72,9 @@
       "version": "'0.1.8'"
     },
     "typst-preview.nvim": {
-      "rev": "0f43ed7fa661617751bfd0ca2f01ee13eba6569e",
-      "src": "https://github.com/chomosuke/typst-preview.nvim",
-      "version": "1.0.0 - 1.1.0"
+      "rev": "6e6d0653d23866e5259e5b7aeab3feb14e135058",
+      "src": "https://github.com/ArcticSnow/typst-preview.nvim",
+      "version": "'master'"
     },
     "which-key.nvim": {
       "rev": "3aab2147e74890957785941f0c1ad87d0a44c15a",

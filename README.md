@@ -106,6 +106,7 @@ bad spec anywhere reports via `vim.notify` instead of cascading.
 | `<leader>bz` | Select a different `.bib` file |
 | `<leader>bp` | Preview the citation under the cursor (also automatic on hover) |
 | `<leader>ff` / `<leader>fg` / `<leader>fb` | Find files / live grep / buffers |
+| `<space>fn` | Browse this config's own files (same as the main config's) |
 | `-` / `+` | Open parent directory (oil.nvim) / floating |
 | `grn` / `gra` / `grd` / `grr` / `gO` / `K` | LSP: rename / code action / definition / references / doc symbols / hover |
 

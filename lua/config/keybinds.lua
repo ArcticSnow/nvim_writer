@@ -8,6 +8,37 @@
 
 local map = vim.keymap.set
 
+
+
+
+
+-- Destroy current buffer without closing window
+map({ 'n' }, '<leader>bd', function()
+  require('custom.plugins.utils').destroy_buffer()
+end, { desc = 'Destroy current buffer but do not close its window' })
+
+
+
+-- move through buffers using n, p, and x to close buffer
+map("n", "<tab>","<cmd>bnext<cr>", {noremap=true, desc = "Move to next buffer"})   -- move to next buffer
+map("n", "<S-tab>","<cmd>bprevious<cr>", {noremap=true, desc = "Move to previous buffer"})   -- move to previous buffer
+
+
+-- splitting & resizing
+map("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "split window vertically" })
+map("n", "<leader>sh", "<cmd>split<cr>", { desc = "split window horizontally" })
+map("n", "<c-up>", "<cmd>resize +2<cr>", { desc = "increase window height" })
+map("n", "<c-down>", "<cmd>resize -2<cr>", { desc = "decrease window height" })
+map("n", "<c-right>", "<cmd>vertical resize -2<cr>", { desc = "decrease window width" })
+map("n", "<c-left>", "<cmd>vertical resize +2<cr>", { desc = "increase window width" })
+
+
+-- Personalized adaptation of classical Vim motion
+map('n', '{', 'k{j_', {desc="go to first line of previous paragraph"})  -- go to first line of previous paragraph
+map('n', '}', '}j_', {desc="go to first line of next paragraph"})  -- got to first line of next paragraph
+map('v', 'p', 'ip', {desc="select inside paragraph"})  -- shorten vip to vp to select paragraph. can be used vppp to select subsequent paragraph
+
+
 -- ---------------------------------------------------------------------------
 -- Citations (custom.bibtex_finder -- ported from your main config, with a
 -- filetype-aware citation format added; see lua/config/autocmds.lua)
