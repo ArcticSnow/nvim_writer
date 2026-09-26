@@ -53,7 +53,7 @@ return {
       dependencies_bin = { tinymist = 'tinymist' },
       open_cmd = opener .. ' %s',
       partial_rendering = true,
-      debug=true,
+      debug=false,
     }
   end,
 }
