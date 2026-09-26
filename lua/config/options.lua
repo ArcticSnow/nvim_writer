@@ -9,6 +9,7 @@ local set = vim.opt
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+
 -- ---------------------------------------------------------------------------
 -- Chrome: minimal from the start. No line numbers, no sign column clutter,
 -- no cursorline -- this isn't code, there's nothing to line up against.

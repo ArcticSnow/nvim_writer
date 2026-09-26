@@ -41,7 +41,7 @@
 -- message instead of a separate confusing failure per language.
 -- ============================================================================
 
-local ensure_installed = { 'markdown', 'markdown_inline', 'yaml', 'bibtex', 'typst' }
+local ensure_installed = { 'markdown', 'markdown_inline', 'yaml', 'bibtex', 'typst' ,'lua'}
 
 return {
   pack = {
