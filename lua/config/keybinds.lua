@@ -10,7 +10,10 @@ local map = vim.keymap.set
 
 
 
-
+-- Insert templates
+map('n', '<leader>tm', function()
+  require('custom.typst_templates').pick()
+end, { desc = 'Insert Typst template' })
 
 -- Destroy current buffer without closing window
 map({ 'n' }, '<leader>bd', function()

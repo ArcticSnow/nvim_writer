@@ -88,14 +88,13 @@ function M.disable()
   end
   state.active = false
 
-  if state.left_win and vim.api.nvim_win_is_valid(state.left_win) then
-    vim.api.nvim_win_close(state.left_win, true)
+   if state.left_win and vim.api.nvim_win_is_valid(state.left_win) then
+    pcall(vim.api.nvim_win_close, state.left_win, true)
   end
   if state.right_win and vim.api.nvim_win_is_valid(state.right_win) then
-    vim.api.nvim_win_close(state.right_win, true)
+    pcall(vim.api.nvim_win_close, state.right_win, true)
   end
   state.left_win, state.right_win = nil, nil
-
   vim.o.laststatus = state.saved.laststatus or 2
   if state.saved.fillchars then
     vim.o.fillchars = state.saved.fillchars
