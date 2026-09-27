@@ -77,6 +77,8 @@ map('n', '<leader>zb', function()
   require('custom.prose_mode').toggle_background()
 end, { desc = 'Toggle light/dark background' })
 
+map('n', '<leader>zc', '<cmd>Themery<CR>', { desc = 'Pick a colorscheme' })
+
 -- ---------------------------------------------------------------------------
 -- Outline: toggleable side panel (not a picker) -- see lua/custom/outline_panel.lua
 -- ---------------------------------------------------------------------------

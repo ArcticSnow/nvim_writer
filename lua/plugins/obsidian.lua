@@ -28,6 +28,10 @@ return {
           name = 'work',
           path = '/home/filhols/Documents/MF_vault/',
         },
+	{
+	name = 'cnrs',
+	path = '/home/tintino/Pcloud/Vaults/CNRS_project/'
+				}
       },
     }
   end,
