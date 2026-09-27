@@ -1,15 +1,32 @@
 -- ================================================================
--- bibtex_finder -- ported from your main config's lua/custom/bibtex_finder.lua,
+-- bibtex_finder -- ported from the main config's lua/custom/bibtex_finder.lua,
 -- unchanged in its core (search_and_insert, select_bib_file, the .bib parser),
--- plus two additions for this writing config:
+-- plus additions made over the course of setting this config up:
 --   - a small mtime-keyed cache, so preview_at_cursor() doesn't re-parse the
 --     whole .bib file on every CursorHold
---   - preview_at_cursor(): a small floating window showing author/year/title
---     for the citation key under the cursor, wired to CursorHold from
---     lua/config/autocmds.lua so it acts like a hover
+--   - preview_at_cursor(): a small floating window showing an APA-style
+--     approximation (author, year, title, journal) for the citation key
+--     under the cursor, wired to CursorHold from lua/config/autocmds.lua so
+--     it acts like a hover. This is a quick-glance approximation, not a
+--     full CSL-accurate formatter -- the actual reference list in a
+--     compiled document still comes from Typst/tinymist's own citation
+--     processing, not from this.
+--   - extract_field() tolerates BetterBibTeX's default export style (spaces
+--     around "=") -- the original tight "field={value}" pattern was
+--     silently failing to extract title/author/year against that style,
+--     which is why search only ever seemed to match citation keys.
+--   - search_text also indexes journal/journaltitle/booktitle and keywords
+--     (BetterBibTeX maps Zotero tags into `keywords`), so you can find a
+--     paper by topic or venue, not just author/title/key/year.
+--   - open_in_zotero(): jumps to the citation under the cursor directly in
+--     Zotero via BetterBibTeX's zotero://select/items/bbt:<citekey> URI
+--     (confirmed against BBT's own maintainer's description of the
+--     feature, not independently tested end-to-end here).
 --
 -- citation_format is switched between "[@%s]" (Markdown) and "@%s" (Typst)
--- automatically by lua/config/autocmds.lua.
+-- automatically by lua/config/autocmds.lua, which also sets a default
+-- bib_file pointing at a Zotero/BetterBibTeX export if one hasn't already
+-- been set for the session.
 -- ================================================================
 
 local M = {}
@@ -93,10 +110,34 @@ M.select_bib_file = function()
 end
 
 local function extract_field(entry, field_name)
-  local pattern1 = field_name .. '={([^}]*)}'
-  local pattern2 = field_name .. '="([^"]*)"'
-  return entry:match(pattern1) or entry:match(pattern2) or ''
+  -- %b{} is Lua's "balanced match" pattern -- it correctly handles nested
+  -- braces like `title = {{Protected Phrase} rest of title}` (a standard
+  -- BibTeX convention to protect capitalization from a citation style's
+  -- automatic case-changing). The old `[^}]*}` approach stopped at the
+  -- FIRST closing brace it found, truncating the title and leaving a
+  -- stray leading `{` in the result.
+  local start = entry:find(field_name .. '%s*=%s*{')
+  if start then
+    local brace_start = entry:find('{', start)
+    local balanced = entry:match('%b{}', brace_start)
+    if balanced then
+      -- strip the outer braces, then any remaining protective braces
+      -- inside -- these are typesetting hints, not meant to display
+      return (balanced:sub(2, -2):gsub('[{}]', ''))
+    end
+  end
+  local pattern2 = field_name .. '%s*=%s*"([^"]*)"'
+  return entry:match(pattern2) or ''
 end
+
+--
+-- local function extract_field(entry, field_name)
+--   -- %s* around the `=` tolerates BetterBibTeX's default export style
+--   -- (spaces around `=`), not just a tight "field={value}".
+--   local pattern1 = field_name .. '%s*=%s*{([^}]*)}'
+--   local pattern2 = field_name .. '%s*=%s*"([^"]*)"'
+--   return entry:match(pattern1) or entry:match(pattern2) or ''
+-- end
 
 local function parse_bibtex_file(filepath)
   if not file_exists(filepath) then
@@ -155,7 +196,26 @@ local function parse_bibtex_file(filepath)
   for _, entry in ipairs(entries) do
     local title = extract_field(entry.full, 'title')
     local year = extract_field(entry.full, 'year')
+
+if year == '' then
+  -- BibLaTeX-style exports often use `date` (e.g. "2020-03-15") instead of
+  -- a bare `year` field -- pull the first 4-digit run out of it as a fallback.
+  local date = extract_field(entry.full, 'date')
+  year = date:match '%d%d%d%d' or ''
+end
+
     local author = extract_field(entry.full, 'author')
+    -- BetterBibTeX maps Zotero tags into the standard `keywords` field;
+    -- journal/journaltitle/booktitle covers articles, journaltitle-style
+    -- entries, and conference papers respectively.
+    local keywords = extract_field(entry.full, 'keywords')
+    local journal = extract_field(entry.full, 'journal')
+    if journal == '' then
+      journal = extract_field(entry.full, 'journaltitle')
+    end
+    if journal == '' then
+      journal = extract_field(entry.full, 'booktitle')
+    end
 
     local display_key = entry.key
     if year and year ~= '' then
@@ -168,8 +228,9 @@ local function parse_bibtex_file(filepath)
       title = title,
       author = author,
       year = year,
+      journal = journal,
       full = entry.full,
-      search_text = string.format('%s %s %s %s', entry.key, author, title, year),
+      search_text = string.format('%s %s %s %s %s %s', entry.key, author, title, year, journal, keywords),
     })
   end
 
@@ -275,9 +336,44 @@ local function citation_key_under_cursor()
   return nil
 end
 
---- Show a small floating window with author/year/title for the citation
---- under the cursor. No-ops quietly if there's nothing to show -- this is
---- meant to feel like ambient hover info, not a command you run.
+--- First-comma surname extraction, tolerant of BetterBibTeX's "Last, First"
+--- convention and a plain "First Last" fallback if there's no comma.
+local function apa_surname(author)
+  author = author:gsub('^%s+', ''):gsub('%s+$', '')
+  local surname = author:match '^([^,]+),'
+  if surname then
+    return (surname:gsub('%s+$', ''))
+  end
+  local last
+  for w in author:gmatch '%S+' do
+    last = w
+  end
+  return last or author
+end
+
+--- BetterBibTeX/BibLaTeX separates multiple authors with " and ". APA:
+--- one author -> surname; two -> "A & B"; three or more -> "A et al."
+local function apa_authors(author_field)
+  if author_field == '' then
+    return 'Unknown author'
+  end
+  local parts = {}
+  for a in (author_field .. ' and '):gmatch '(.-)%s+and%s+' do
+    table.insert(parts, a)
+  end
+  if #parts == 1 then
+    return apa_surname(parts[1])
+  elseif #parts == 2 then
+    return apa_surname(parts[1]) .. ' & ' .. apa_surname(parts[2])
+  else
+    return apa_surname(parts[1]) .. ' et al.'
+  end
+end
+
+--- Show a small floating window with an APA-style approximation (author,
+--- year, title, journal) for the citation under the cursor. No-ops quietly
+--- if there's nothing to show -- this is meant to feel like ambient hover
+--- info, not a command you run.
 M.preview_at_cursor = function()
   local key = citation_key_under_cursor()
   if not key then
@@ -301,13 +397,14 @@ M.preview_at_cursor = function()
     return
   end
 
-  local byline = match.author ~= '' and match.author or 'Unknown author'
-  if match.year ~= '' then
-    byline = byline .. ' (' .. match.year .. ')'
-  end
+  local authors = apa_authors(match.author)
+  local year = match.year ~= '' and match.year or 'n.d.'
   local title = match.title ~= '' and match.title or '(no title)'
 
-  vim.lsp.util.open_floating_preview({ title, byline }, 'markdown', {
+  local line1 = string.format('%s (%s).', authors, year)
+  local line2 = match.journal ~= '' and (title .. ' *' .. match.journal .. '*.') or (title .. '.')
+
+  vim.lsp.util.open_floating_preview({ line1, line2 }, 'markdown', {
     border = 'rounded',
     max_width = 60,
     focus = false,
@@ -323,6 +420,22 @@ M.attach_cursor_preview = function()
     group = vim.api.nvim_create_augroup('writer-citation-preview', { clear = false }),
     callback = M.preview_at_cursor,
   })
+end
+
+--- Open the citation under the cursor directly in Zotero, via the
+--- BetterBibTeX-provided zotero://select/items/bbt:<citekey> URI --
+--- confirmed by BBT's own maintainer, not independently tested end-to-end
+--- here. If it doesn't open the right item, that's the first thing to
+--- double check.
+M.open_in_zotero = function()
+  local key = citation_key_under_cursor()
+  if not key then
+    vim.notify('No citation under cursor', vim.log.levels.WARN)
+    return
+  end
+  local uri = 'zotero://select/items/bbt:' .. key
+  local opener = vim.fn.has 'mac' == 1 and 'open' or 'xdg-open'
+  vim.system({ opener, uri })
 end
 
 return M

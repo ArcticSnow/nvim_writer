@@ -9,6 +9,9 @@
 local map = vim.keymap.set
 
 
+map('n', '<leader>bo', function()
+  require('custom.bibtex_finder').open_in_zotero()
+end, { desc = 'Open citation in Zotero' })
 
 -- Insert templates
 map('n', '<leader>tm', function()
