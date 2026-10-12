@@ -51,6 +51,7 @@ local plugin_modules = {
   'auto-session',
   'misc',
   'obsidian',
+    'auto-save',
 }
 
 for _, name in ipairs(plugin_modules) do
