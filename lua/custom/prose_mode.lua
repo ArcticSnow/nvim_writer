@@ -9,10 +9,13 @@
 
 local M = {}
 
-local CONTENT_WIDTH = 84
+local DEFAULT_CONTENT_WIDTH = 84
+local WIDTH_STEP = 4
+local MIN_CONTENT_WIDTH = 40
 
 local state = {
   active = false,
+  content_width = DEFAULT_CONTENT_WIDTH,
   left_win = nil,
   right_win = nil,
   origin_win = nil,
@@ -37,6 +40,46 @@ local function make_pad(split_cmd, width)
   return win
 end
 
+local function apply_pads()
+  if state.left_win and vim.api.nvim_win_is_valid(state.left_win) then
+    pcall(vim.api.nvim_win_close, state.left_win, true)
+  end
+  if state.right_win and vim.api.nvim_win_is_valid(state.right_win) then
+    pcall(vim.api.nvim_win_close, state.right_win, true)
+  end
+  state.left_win, state.right_win = nil, nil
+
+  local total_cols = vim.o.columns
+  local pad = math.floor((total_cols - state.content_width) / 2)
+  if pad > 2 then
+    vim.api.nvim_set_current_win(state.origin_win)
+    make_pad('topleft vsplit', pad)
+    state.left_win = vim.api.nvim_get_current_win()
+
+    vim.api.nvim_set_current_win(state.origin_win)
+    make_pad('botright vsplit', pad)
+    state.right_win = vim.api.nvim_get_current_win()
+
+    vim.api.nvim_set_current_win(state.origin_win)
+  end
+end
+
+function M.widen()
+  state.content_width = state.content_width + WIDTH_STEP
+  if state.active then
+    apply_pads()
+  end
+  vim.notify('Write mode width: ' .. state.content_width, vim.log.levels.INFO)
+end
+
+function M.narrow()
+  state.content_width = math.max(MIN_CONTENT_WIDTH, state.content_width - WIDTH_STEP)
+  if state.active then
+    apply_pads()
+  end
+  vim.notify('Write mode width: ' .. state.content_width, vim.log.levels.INFO)
+end
+
 function M.enable()
   if state.active then
     return
@@ -57,19 +100,7 @@ function M.enable()
   local normal_bg = vim.api.nvim_get_hl(0, { name = 'Normal', link = false }).bg
   vim.api.nvim_set_hl(0, 'WinSeparator', { fg = normal_bg, bg = normal_bg })
 
-  -- The column itself
-  local total_cols = vim.o.columns
-  local pad = math.floor((total_cols - CONTENT_WIDTH) / 2)
-  if pad > 2 then
-    make_pad('topleft vsplit', pad)
-    state.left_win = vim.api.nvim_get_current_win()
-
-    vim.api.nvim_set_current_win(state.origin_win)
-    make_pad('botright vsplit', pad)
-    state.right_win = vim.api.nvim_get_current_win()
-
-    vim.api.nvim_set_current_win(state.origin_win)
-  end
+  apply_pads()
 
   -- The sentence
   pcall(function()

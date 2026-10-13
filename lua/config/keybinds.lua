@@ -82,6 +82,16 @@ end, { desc = 'Toggle light/dark background' })
 
 map('n', '<leader>zc', '<cmd>Themery<CR>', { desc = 'Pick a colorscheme' })
 
+
+map('n', '<leader>z]', function()
+  require('custom.prose_mode').widen()
+end, { desc = 'Widen write-mode column' })
+
+map('n', '<leader>z[', function()
+  require('custom.prose_mode').narrow()
+end, { desc = 'Narrow write-mode column' })
+
+
 -- ---------------------------------------------------------------------------
 -- Outline: toggleable side panel (not a picker) -- see lua/custom/outline_panel.lua
 -- ---------------------------------------------------------------------------
@@ -139,6 +149,16 @@ map('n', '<c-l>', '<c-w>l', { desc = 'Move to right window' })
 -- ]p/[p are gone since this is a continuously scrollable view, not
 -- page-by-page.
 -- ---------------------------------------------------------------------------
+
+map('n', '<leader>th', function()
+  require('custom.cheatsheet').open 'typst'
+end, { desc = 'Typst cheatsheet (popup)' })
+
+map('n', '<leader>tH', function()
+  require('custom.cheatsheet').pick()
+end, { desc = 'Pick a cheatsheet' })
+
+
 map('n', '<leader>tp', '<cmd>TypstPreviewToggle<CR>', { desc = 'Toggle Typst live preview (browser)' })
 
 map('n', '<leader>tv', function()

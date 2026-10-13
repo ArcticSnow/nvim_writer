@@ -33,6 +33,14 @@ local function in_code_context()
   return false
 end
 
+
+local function in_inline_code()
+	local line = vim.api.nvim_get_current_line()
+	local col = vim.api.nvim_win_get_cursor(0)[2]
+	local _, ticks = line:sub(1, col):gsub('`', '')
+	return ticks % 2 == 1
+end
+
 local function replace_tail(line, col, tail_byte_len, replacement)
   local head = line:sub(1, col - tail_byte_len)
   local rest = line:sub(col + 1)
@@ -43,7 +51,7 @@ local function replace_tail(line, col, tail_byte_len, replacement)
 end
 
 local function on_text_changed()
-  if in_code_context() then
+  if in_code_context() or in_inline_code() then
     return
   end
 
