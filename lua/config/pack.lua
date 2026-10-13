@@ -33,7 +33,7 @@
 vim.api.nvim_create_autocmd('PackChanged', {
   callback = function(ev)
     if ev.data.spec.name == 'telescope-fzf-native.nvim' and (ev.data.kind == 'install' or ev.data.kind == 'update') then
-      vim.system({ 'make' }, { cwd = ev.data.path })
+      vim.system({ 'make' }, { cwd = ev.data.path }):wait()
     end
   end,
 })
@@ -51,6 +51,7 @@ local plugin_modules = {
   'auto-session',
   'misc',
   'obsidian',
+    'auto-save',
 }
 
 for _, name in ipairs(plugin_modules) do
