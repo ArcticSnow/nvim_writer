@@ -46,6 +46,16 @@ map('v', 'p', 'ip', {desc="select inside paragraph"})  -- shorten vip to vp to s
 
 
 -- ---------------------------------------------------------------------------
+-- Grammar check
+-- ---------------------------------------------------------------------------
+
+map('n', '<leader>gc', function() require('custom.grammar').check() end, { desc = 'Grammar: check this document' })
+map('n', '<leader>gs', function() require('custom.grammar').stop() end, { desc = 'Grammar: stop the checker' })
+map('n', '<leader>gq', function() require('custom.grammar').list() end, { desc = 'Grammar: list all issues' })
+map('n', '<leader>gl', function() require('custom.writing_language').toggle() end, { desc = 'Writing language en/fr' })
+
+
+-- ---------------------------------------------------------------------------
 -- Citations (custom.bibtex_finder -- ported from your main config, with a
 -- filetype-aware citation format added; see lua/config/autocmds.lua)
 -- ---------------------------------------------------------------------------

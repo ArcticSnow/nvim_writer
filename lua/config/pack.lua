@@ -44,6 +44,7 @@ local plugin_modules = {
   'treesitter',
   'typst',
   'typst_preview',
+    'grammar',
   'telescope',
   'mini',
   'markdown_render',

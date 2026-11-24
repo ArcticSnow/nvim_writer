@@ -39,7 +39,7 @@ return {
 
   config = function()
     require('mason').setup {}
-    require('mason-tool-installer').setup { ensure_installed = { 'tinymist' } }
+    require('mason-tool-installer').setup { ensure_installed = { 'tinymist','ltex-ls-plus' } }
 
     vim.diagnostic.config {
       severity_sort = true,
